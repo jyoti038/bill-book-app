@@ -44,16 +44,27 @@ const menuItems = [
 function Sidebar({ mobileOpen, setMobileOpen }) {
   const currentPath = window.location.pathname;
 
+  const closeSidebar = () => {
+    setMobileOpen(false);
+  };
+
   return (
     <>
+      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="mobile-overlay"
-          onClick={() => setMobileOpen(false)}
+          onClick={closeSidebar}
         />
       )}
 
-      <aside className={`sidebar ${mobileOpen ? "mobile-show" : ""}`}>
+      <aside
+        className={`sidebar ${
+          mobileOpen ? "mobile-show" : ""
+        }`}
+      >
+        {/* SIDEBAR HEADER */}
+
         <div className="sidebar-header">
           <div className="brand-logo">MT</div>
 
@@ -62,15 +73,23 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
             <span>House</span>
           </div>
 
+          {/* Mobile close button */}
+
           <button
+            type="button"
             className="close-sidebar"
-            onClick={() => setMobileOpen(false)}
+            onClick={closeSidebar}
+            aria-label="Close sidebar"
           >
             <X size={20} />
           </button>
         </div>
 
-        <div className="business-label">BUSINESS</div>
+        <div className="business-label">
+          BUSINESS
+        </div>
+
+        {/* MENU */}
 
         <nav>
           {menuItems.map((item) => {
@@ -85,23 +104,33 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
               <a
                 key={item.name}
                 href={item.path}
-                className={`nav-item ${active ? "active" : ""}`}
-                onClick={() => setMobileOpen(false)}
+                className={`nav-item ${
+                  active ? "active" : ""
+                }`}
+                onClick={closeSidebar}
               >
                 <Icon size={19} />
+
                 <span>{item.name}</span>
               </a>
             );
           })}
         </nav>
 
+        {/* BOTTOM PROFILE */}
+
         <div className="sidebar-bottom">
           <div className="user-box">
             <div className="user-avatar">M</div>
 
             <div>
-              <strong>Manish Tent House</strong>
-              <small>Administrator</small>
+              <strong>
+                Manish Tent House
+              </strong>
+
+              <small>
+                Administrator
+              </small>
             </div>
           </div>
         </div>

@@ -3,7 +3,9 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
 function DashboardLayout({ children }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(
+    window.innerWidth > 900
+  );
 
   return (
     <div className="app-layout">

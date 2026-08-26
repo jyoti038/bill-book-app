@@ -7,7 +7,7 @@ import {
   Save,
   Receipt,
 } from "lucide-react";
-
+import { addNotification } from "../components/notifications";
 function NewBill() {
   const [customers, setCustomers] = useState([]);
   const [stock, setStock] = useState([]);
@@ -213,10 +213,25 @@ const newBill = {
   currentBalance,
   date: new Date().toISOString(),
 };
-    localStorage.setItem(
-      "mth_bills",
-      JSON.stringify([newBill, ...bills])
-    );
+
+localStorage.setItem(
+  "mth_bills",
+  JSON.stringify([newBill, ...bills])
+);
+
+// 🔔 Create notification
+addNotification({
+  type: "bill",
+  title: "New Bill Generated",
+  message: `${
+    customerDetails.name || "Customer"
+  } • ₹${Number(grandTotal).toLocaleString("en-IN")}`,
+});
+
+// Tell Header to refresh notifications immediately
+window.dispatchEvent(
+  new Event("mth-notifications-updated")
+);
     // =========================
 // UPDATE CUSTOMER BALANCE
 // =========================
