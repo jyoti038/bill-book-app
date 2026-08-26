@@ -1548,3 +1548,48 @@ button {
     width: 100%;
   }
 }
+
+.bill-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.download-pdf-button,
+.whatsapp-button {
+  height: 36px;
+  padding: 0 13px;
+  border: none;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.download-pdf-button {
+  background: #111827;
+  color: white;
+}
+
+.whatsapp-button {
+  background: #16a34a;
+  color: white;
+}
+
+.download-pdf-button:hover,
+.whatsapp-button:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 650px) {
+  .bill-modal-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .download-pdf-button,
+  .whatsapp-button {
+    font-size: 10px;
+    padding: 0 9px;
+  }
+}

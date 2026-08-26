@@ -394,7 +394,72 @@ const generatePDF = (bill) => {
   // =========================
 
   doc.save(`${bill.billNumber}.pdf`);
+
+return doc;
 };
+
+const sharePDFOnWhatsApp = async (bill) => {
+  try {
+    const doc = generatePDF(bill);
+
+    const pdfBlob = doc.output("blob");
+
+    const pdfFile = new File(
+      [pdfBlob],
+      `${bill.billNumber}.pdf`,
+      {
+        type: "application/pdf",
+      }
+    );
+
+    // Mobile / supported browser
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({
+        files: [pdfFile],
+      })
+    ) {
+      await navigator.share({
+        title: `${bill.billNumber} - Manish Tent House`,
+        text: `Bill ${bill.billNumber} - Manish Tent House`,
+        files: [pdfFile],
+      });
+
+      return;
+    }
+
+    // Fallback for unsupported browsers
+    const message = encodeURIComponent(
+      `Hello ${bill.customer?.name || ""},\n\n` +
+      `Please find your bill ${bill.billNumber} from Manish Tent House.\n\n` +
+      `Total Amount: ₹${Number(
+        bill.grandTotal || 0
+      ).toLocaleString("en-IN")}\n` +
+      `Balance: ₹${Number(
+        bill.balance || 0
+      ).toLocaleString("en-IN")}`
+    );
+
+    window.open(
+      `https://wa.me/?text=${message}`,
+      "_blank"
+    );
+
+    alert(
+      "PDF has been downloaded. WhatsApp opened. Please attach the downloaded PDF."
+    );
+  } catch (error) {
+    console.error("WhatsApp sharing failed:", error);
+
+    if (error.name !== "AbortError") {
+      alert(
+        "Unable to share PDF. The PDF has been downloaded instead."
+      );
+    }
+  }
+};
+
 
 const numberToWords = (num) => {
   if (num === 0) return "Zero";
@@ -647,21 +712,32 @@ const numberToWords = (num) => {
     </p>
   </div>
 
-  <div style={{ display: "flex", gap: "8px" }}>
-    <button
-      className="primary-button"
-      onClick={() => generatePDF(selectedBill)}
-    >
-      Download PDF
-    </button>
+  <div className="bill-modal-actions">
 
-    <button
-      className="modal-close"
-      onClick={() => setSelectedBill(null)}
-    >
-      ×
-    </button>
-  </div>
+  <button
+    className="download-pdf-button"
+    onClick={() => generatePDF(selectedBill)}
+  >
+    📄 Download PDF
+  </button>
+
+  <button
+    className="whatsapp-button"
+    onClick={() =>
+      sharePDFOnWhatsApp(selectedBill)
+    }
+  >
+    💬 Share on WhatsApp
+  </button>
+
+  <button
+    className="modal-close"
+    onClick={() => setSelectedBill(null)}
+  >
+    ×
+  </button>
+
+</div>
 </div>
 
             <div className="bill-preview">
