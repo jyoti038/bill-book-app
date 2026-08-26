@@ -26,6 +26,7 @@ function NewBill() {
 
   const [discount, setDiscount] = useState(0);
   const [received, setReceived] = useState(0);
+  const [previousBalance, setPreviousBalance] = useState(0);
 
   useEffect(() => {
     const savedCustomers = JSON.parse(
@@ -40,27 +41,46 @@ function NewBill() {
     setStock(savedStock);
   }, []);
 
-  const handleCustomerChange = (id) => {
-    setCustomerId(id);
+ const handleCustomerChange = (id) => {
+  setCustomerId(id);
 
-    const customer = customers.find(
-      (item) => String(item.id) === String(id)
-    );
+  if (!id) {
+    setCustomerDetails({
+      name: "",
+      mobile: "",
+      address: "",
+    });
 
-    if (customer) {
-      setCustomerDetails({
-        name: customer.name,
-        mobile: customer.mobile,
-        address: customer.address,
-      });
-    } else {
-      setCustomerDetails({
-        name: "",
-        mobile: "",
-        address: "",
-      });
-    }
-  };
+    setPreviousBalance(0);
+    return;
+  }
+
+  const selectedCustomer = customers.find(
+    (customer) => String(customer.id) === String(id)
+  );
+
+  if (!selectedCustomer) {
+    setCustomerDetails({
+      name: "",
+      mobile: "",
+      address: "",
+    });
+
+    setPreviousBalance(0);
+    return;
+  }
+
+  setCustomerDetails({
+    name: selectedCustomer.name || "",
+    mobile: selectedCustomer.mobile || "",
+    address: selectedCustomer.address || "",
+  });
+
+  // Get customer's previous outstanding balance
+  setPreviousBalance(
+    Number(selectedCustomer.balance || 0)
+  );
+};
 
   const addItem = () => {
     if (!selectedItem) {
@@ -176,23 +196,48 @@ function NewBill() {
       bills.length + 1
     ).padStart(4, "0")}`;
 
-    const newBill = {
-      id: Date.now(),
-      billNumber,
-      customer: customerDetails,
-      items: billItems,
-      subtotal,
-      discount: discountAmount,
-      grandTotal,
-      received: receivedAmount,
-      balance,
-      date: new Date().toISOString(),
-    };
+    const currentBalance =
+  Number(previousBalance || 0) + Number(balance || 0);
 
+const newBill = {
+  id: Date.now(),
+  billNumber,
+  customer: customerDetails,
+  items: billItems,
+  subtotal,
+  discount: discountAmount,
+  grandTotal,
+  received: receivedAmount,
+  balance,
+  previousBalance: Number(previousBalance || 0),
+  currentBalance,
+  date: new Date().toISOString(),
+};
     localStorage.setItem(
       "mth_bills",
       JSON.stringify([newBill, ...bills])
     );
+    // =========================
+// UPDATE CUSTOMER BALANCE
+// =========================
+
+const updatedCustomers = customers.map((customer) => {
+  if (String(customer.id) === String(customerId)) {
+    return {
+      ...customer,
+      balance: currentBalance,
+    };
+  }
+
+  return customer;
+});
+
+localStorage.setItem(
+  "mth_customers",
+  JSON.stringify(updatedCustomers)
+);
+
+setCustomers(updatedCustomers);
 
     // Reduce stock
     const updatedStock = stock.map((stockItem) => {
@@ -223,7 +268,7 @@ function NewBill() {
       mobile: "",
       address: "",
     });
-
+    setPreviousBalance(0);
     setBillItems([]);
     setDiscount(0);
     setReceived(0);
@@ -247,67 +292,131 @@ function NewBill() {
       </div>
 
       <div className="billing-layout">
-        {/* CUSTOMER */}
-        <section className="bill-card">
-          <div className="bill-card-header">
-            <div className="bill-section-icon">
-              <User size={18} />
-            </div>
+       {/* CUSTOMER */}
 
-            <div>
-              <h2>Customer Details</h2>
-              <p>Select an existing customer.</p>
-            </div>
-          </div>
+<section className="bill-card">
 
-          <div className="bill-card-body">
-            <div className="form-group">
-              <label>Select Customer *</label>
+  <div className="bill-card-header">
 
-              <select
-                value={customerId}
-                onChange={(e) =>
-                  handleCustomerChange(e.target.value)
-                }
-              >
-                <option value="">
-                  -- Select Customer --
-                </option>
+    <div className="bill-section-icon">
+      <User size={18} />
+    </div>
 
-                {customers.map((customer) => (
-                  <option
-                    key={customer.id}
-                    value={customer.id}
-                  >
-                    {customer.name} - {customer.mobile}
-                  </option>
-                ))}
-              </select>
-            </div>
+    <div>
+      <h2>Customer Details</h2>
+      <p>Select an existing customer.</p>
+    </div>
 
-            {customerDetails.name && (
-              <div className="selected-customer">
-                <strong>{customerDetails.name}</strong>
+  </div>
 
-                <span>
-                  {customerDetails.mobile}
-                </span>
+  <div className="bill-card-body">
 
-                <span>
-                  {customerDetails.address || "No address"}
-                </span>
-              </div>
-            )}
+    <div className="form-group">
 
-            {customers.length === 0 && (
-              <div className="bill-warning">
-                No customers found. Please add a customer
-                first.
-              </div>
-            )}
-          </div>
-        </section>
+      <label>Select Customer *</label>
 
+      <select
+        value={customerId}
+        onChange={(e) =>
+          handleCustomerChange(e.target.value)
+        }
+      >
+
+        <option value="">
+          -- Select Customer --
+        </option>
+
+        {customers.map((customer) => (
+
+          <option
+            key={customer.id}
+            value={customer.id}
+          >
+            {customer.name} - {customer.mobile}
+          </option>
+
+        ))}
+
+      </select>
+
+    </div>
+
+
+    {/* SELECTED CUSTOMER */}
+
+    {customerDetails.name && (
+
+      <div className="selected-customer">
+
+        <strong>
+          {customerDetails.name}
+        </strong>
+
+        <span>
+          {customerDetails.mobile}
+        </span>
+
+        <span>
+          {customerDetails.address || "No address"}
+        </span>
+
+
+        {/* PREVIOUS BALANCE */}
+
+        <div
+          style={{
+            marginTop: "12px",
+            paddingTop: "10px",
+            borderTop: "1px solid #e5e7eb",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+
+          <span
+            style={{
+              fontSize: "11px",
+              color: "#6b7280",
+            }}
+          >
+            Previous Balance
+          </span>
+
+          <strong
+            style={{
+              fontSize: "13px",
+              color:
+                Number(previousBalance) > 0
+                  ? "#dc2626"
+                  : "#16a34a",
+            }}
+          >
+            ₹
+            {Number(
+              previousBalance || 0
+            ).toLocaleString("en-IN")}
+          </strong>
+
+        </div>
+
+      </div>
+
+    )}
+
+
+    {customers.length === 0 && (
+
+      <div className="bill-warning">
+        No customers found. Please add a customer
+        first.
+      </div>
+
+    )}
+
+  </div>
+
+</section>
         {/* ITEMS */}
         <section className="bill-card">
           <div className="bill-card-header">

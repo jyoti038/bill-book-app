@@ -1593,3 +1593,243 @@ button {
     padding: 0 9px;
   }
 }
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 18px;
+}
+
+.dashboard-stat-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+}
+
+.dashboard-stat-card span {
+  display: block;
+  color: #9ca3af;
+  font-size: 10px;
+  margin-bottom: 4px;
+}
+
+.dashboard-stat-card h2 {
+  font-size: 20px;
+  color: #111827;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.dashboard-panel {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dashboard-panel-header {
+  padding: 17px 19px;
+  border-bottom: 1px solid #f1f1f1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-panel-header h2 {
+  font-size: 14px;
+}
+
+.dashboard-panel-header p {
+  color: #9ca3af;
+  font-size: 10px;
+  margin-top: 3px;
+}
+
+.dashboard-panel-header > svg {
+  color: #9ca3af;
+}
+
+.overview-list {
+  padding: 8px 19px;
+}
+
+.overview-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 12px;
+}
+
+.overview-row:last-child {
+  border-bottom: none;
+}
+
+.overview-row span {
+  color: #6b7280;
+}
+
+.overview-row strong {
+  color: #111827;
+}
+
+.pending-text {
+  color: #dc2626 !important;
+}
+
+.dashboard-empty {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  color: #9ca3af;
+}
+
+.dashboard-empty p {
+  font-size: 11px;
+}
+
+.low-stock-list {
+  padding: 5px 19px;
+}
+
+.low-stock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.low-stock-row:last-child {
+  border-bottom: none;
+}
+
+.low-stock-row strong {
+  display: block;
+  font-size: 12px;
+}
+
+.low-stock-row small {
+  display: block;
+  color: #9ca3af;
+  font-size: 9px;
+  margin-top: 3px;
+}
+
+.low-stock-row > span {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 5px 8px;
+  border-radius: 12px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.recent-bills-panel {
+  margin-bottom: 20px;
+}
+
+.recent-bills-list {
+  padding: 5px 19px;
+}
+
+.recent-bill-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.recent-bill-row:last-child {
+  border-bottom: none;
+}
+
+.recent-bill-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.recent-bill-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recent-bill-info strong {
+  display: block;
+  font-size: 11px;
+}
+
+.recent-bill-info small {
+  display: block;
+  color: #9ca3af;
+  font-size: 9px;
+  margin-top: 3px;
+}
+
+.recent-bill-amount {
+  text-align: right;
+}
+
+.recent-bill-amount strong {
+  display: block;
+  font-size: 12px;
+}
+
+.recent-bill-amount small {
+  display: block;
+  color: #9ca3af;
+  font-size: 9px;
+  margin-top: 3px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 550px) {
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+}
+

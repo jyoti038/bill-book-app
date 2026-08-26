@@ -1,9 +1,20 @@
 import { useEffect, useState } from "react";
-import { Plus, Search, Pencil, Trash2, X, Users } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+  X,
+  Users,
+  FileSpreadsheet,
+} from "lucide-react";
+import * as XLSX from "xlsx";
 
 function Customers() {
   const [customers, setCustomers] = useState(() => {
-    return JSON.parse(localStorage.getItem("mth_customers") || "[]");
+    return JSON.parse(
+      localStorage.getItem("mth_customers") || "[]"
+    );
   });
 
   const [search, setSearch] = useState("");
@@ -17,7 +28,10 @@ function Customers() {
   });
 
   useEffect(() => {
-    localStorage.setItem("mth_customers", JSON.stringify(customers));
+    localStorage.setItem(
+      "mth_customers",
+      JSON.stringify(customers)
+    );
   }, [customers]);
 
   const resetForm = () => {
@@ -48,7 +62,10 @@ function Customers() {
       setCustomers((prev) =>
         prev.map((customer) =>
           customer.id === editingId
-            ? { ...customer, ...form }
+            ? {
+                ...customer,
+                ...form,
+              }
             : customer
         )
       );
@@ -56,10 +73,14 @@ function Customers() {
       const newCustomer = {
         id: Date.now(),
         ...form,
+        balance: 0,
         createdAt: new Date().toISOString(),
       };
 
-      setCustomers((prev) => [newCustomer, ...prev]);
+      setCustomers((prev) => [
+        newCustomer,
+        ...prev,
+      ]);
     }
 
     resetForm();
@@ -88,44 +109,143 @@ function Customers() {
     );
   };
 
-  const filteredCustomers = customers.filter((customer) => {
-    const text = search.toLowerCase();
+  // =========================
+  // EXPORT CUSTOMERS TO EXCEL
+  // =========================
 
-    return (
-      customer.name.toLowerCase().includes(text) ||
-      customer.mobile.includes(text) ||
-      customer.address.toLowerCase().includes(text)
+  const exportToExcel = () => {
+    if (customers.length === 0) {
+      alert("No customers available to export.");
+      return;
+    }
+
+    const excelData = customers.map(
+      (customer, index) => ({
+        "Sr. No.": index + 1,
+        "Customer ID": customer.id,
+        "Customer Name": customer.name || "",
+        "Mobile Number": customer.mobile || "",
+        Address: customer.address || "",
+        "Previous Balance":
+          Number(customer.balance || 0),
+        "Created Date": customer.createdAt
+          ? new Date(
+              customer.createdAt
+            ).toLocaleDateString("en-IN")
+          : "",
+      })
     );
-  });
+
+    const worksheet =
+      XLSX.utils.json_to_sheet(excelData);
+
+    // Column widths
+    worksheet["!cols"] = [
+      { wch: 10 },
+      { wch: 18 },
+      { wch: 25 },
+      { wch: 18 },
+      { wch: 35 },
+      { wch: 18 },
+      { wch: 18 },
+    ];
+
+    const workbook =
+      XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Customers"
+    );
+
+    const today =
+      new Date().toISOString().split("T")[0];
+
+    XLSX.writeFile(
+      workbook,
+      `Manish_Tent_House_Customers_${today}.xlsx`
+    );
+  };
+
+  const filteredCustomers =
+    customers.filter((customer) => {
+      const text = search.toLowerCase();
+
+      return (
+        customer.name
+          .toLowerCase()
+          .includes(text) ||
+        customer.mobile.includes(text) ||
+        customer.address
+          .toLowerCase()
+          .includes(text)
+      );
+    });
 
   return (
     <div>
+      {/* =========================
+          PAGE HEADER
+      ========================= */}
+
       <div className="page-heading">
         <div>
           <h1>Customers</h1>
-          <p>Manage your Manish Tent House customers</p>
+
+          <p>
+            Manage your Manish Tent House customers
+          </p>
         </div>
 
-        <button
-          className="primary-button"
-          onClick={() => {
-            resetForm();
-            setShowForm(true);
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            alignItems: "center",
           }}
         >
-          <Plus size={18} />
-          Add Customer
-        </button>
+          {/* EXPORT EXCEL */}
+
+          <button
+            className="secondary-button"
+            onClick={exportToExcel}
+            title="Export customers to Excel"
+          >
+            <FileSpreadsheet size={17} />
+            Export Excel
+          </button>
+
+          {/* ADD CUSTOMER */}
+
+          <button
+            className="primary-button"
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+          >
+            <Plus size={18} />
+            Add Customer
+          </button>
+        </div>
       </div>
+
+      {/* =========================
+          TOOLBAR
+      ========================= */}
 
       <div className="customer-toolbar">
         <div className="customer-search">
           <Search size={18} />
+
           <input
             type="text"
             placeholder="Search by name or mobile..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
           />
         </div>
 
@@ -135,6 +255,10 @@ function Customers() {
         </div>
       </div>
 
+      {/* =========================
+          CUSTOMER TABLE
+      ========================= */}
+
       <div className="customer-panel">
         {filteredCustomers.length === 0 ? (
           <div className="customer-empty">
@@ -143,7 +267,9 @@ function Customers() {
             </div>
 
             <h3>
-              {search ? "No customers found" : "No customers yet"}
+              {search
+                ? "No customers found"
+                : "No customers yet"}
             </h3>
 
             <p>
@@ -170,57 +296,85 @@ function Customers() {
                   <th>Customer</th>
                   <th>Mobile</th>
                   <th>Address</th>
+                  <th>Balance</th>
                   <th>Actions</th>
                 </tr>
               </thead>
 
               <tbody>
-                {filteredCustomers.map((customer) => (
-                  <tr key={customer.id}>
-                    <td>
-                      <div className="customer-name">
-                        <div className="customer-avatar">
-                          {customer.name.charAt(0).toUpperCase()}
+                {filteredCustomers.map(
+                  (customer) => (
+                    <tr key={customer.id}>
+                      <td>
+                        <div className="customer-name">
+                          <div className="customer-avatar">
+                            {customer.name
+                              .charAt(0)
+                              .toUpperCase()}
+                          </div>
+
+                          <strong>
+                            {customer.name}
+                          </strong>
                         </div>
+                      </td>
 
-                        <strong>{customer.name}</strong>
-                      </div>
-                    </td>
+                      <td>
+                        {customer.mobile}
+                      </td>
 
-                    <td>{customer.mobile}</td>
+                      <td>
+                        {customer.address || "—"}
+                      </td>
 
-                    <td>
-                      {customer.address || "—"}
-                    </td>
+                      <td>
+                        ₹
+                        {Number(
+                          customer.balance || 0
+                        ).toLocaleString(
+                          "en-IN"
+                        )}
+                      </td>
 
-                    <td>
-                      <div className="table-actions">
-                        <button
-                          className="icon-button edit"
-                          onClick={() => handleEdit(customer)}
-                          title="Edit"
-                        >
-                          <Pencil size={16} />
-                        </button>
+                      <td>
+                        <div className="table-actions">
+                          <button
+                            className="icon-button edit"
+                            onClick={() =>
+                              handleEdit(
+                                customer
+                              )
+                            }
+                            title="Edit"
+                          >
+                            <Pencil size={16} />
+                          </button>
 
-                        <button
-                          className="icon-button delete"
-                          onClick={() =>
-                            handleDelete(customer.id)
-                          }
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          <button
+                            className="icon-button delete"
+                            onClick={() =>
+                              handleDelete(
+                                customer.id
+                              )
+                            }
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>
         )}
       </div>
+
+      {/* =========================
+          ADD / EDIT CUSTOMER MODAL
+      ========================= */}
 
       {showForm && (
         <div className="modal-overlay">
@@ -228,11 +382,14 @@ function Customers() {
             <div className="modal-header">
               <div>
                 <h2>
-                  {editingId ? "Edit Customer" : "Add Customer"}
+                  {editingId
+                    ? "Edit Customer"
+                    : "Add Customer"}
                 </h2>
 
                 <p>
-                  Save customer details for faster billing.
+                  Save customer details for faster
+                  billing.
                 </p>
               </div>
 
@@ -246,7 +403,9 @@ function Customers() {
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Customer Name *</label>
+                <label>
+                  Customer Name *
+                </label>
 
                 <input
                   type="text"
@@ -262,7 +421,9 @@ function Customers() {
               </div>
 
               <div className="form-group">
-                <label>Mobile Number *</label>
+                <label>
+                  Mobile Number *
+                </label>
 
                 <input
                   type="tel"
@@ -278,7 +439,9 @@ function Customers() {
               </div>
 
               <div className="form-group">
-                <label>Address</label>
+                <label>
+                  Address
+                </label>
 
                 <textarea
                   placeholder="Enter customer address"

@@ -1,114 +1,294 @@
+import { useEffect, useState } from "react";
 import {
-  IndianRupee,
-  Receipt,
   Users,
   Package,
-  Plus,
+  Receipt,
+  IndianRupee,
+  TrendingUp,
+  Clock,
 } from "lucide-react";
 
 function Dashboard() {
+  const [customers, setCustomers] = useState([]);
+  const [stock, setStock] = useState([]);
+  const [bills, setBills] = useState([]);
+
+  useEffect(() => {
+    loadDashboardData();
+
+    // Agar kisi page se localStorage update ho
+    const handleStorage = () => {
+      loadDashboardData();
+    };
+
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
+  const loadDashboardData = () => {
+    setCustomers(
+      JSON.parse(
+        localStorage.getItem("mth_customers") || "[]"
+      )
+    );
+
+    setStock(
+      JSON.parse(
+        localStorage.getItem("mth_stock") || "[]"
+      )
+    );
+
+    setBills(
+      JSON.parse(
+        localStorage.getItem("mth_bills") || "[]"
+      )
+    );
+  };
+
+  const money = (amount) =>
+    `₹${Number(amount || 0).toLocaleString("en-IN")}`;
+
+  // Total stock quantity
+  const totalStock = stock.reduce(
+    (sum, item) => sum + Number(item.quantity || 0),
+    0
+  );
+
+  // Total sales
+  const totalSales = bills.reduce(
+    (sum, bill) => sum + Number(bill.grandTotal || 0),
+    0
+  );
+
+  // Total pending
+  const totalPending = bills.reduce(
+    (sum, bill) => sum + Number(bill.balance || 0),
+    0
+  );
+
+  // Today's bills
+  const today = new Date().toDateString();
+
+  const todayBills = bills.filter(
+    (bill) =>
+      new Date(bill.date).toDateString() === today
+  );
+
+  const todaySales = todayBills.reduce(
+    (sum, bill) => sum + Number(bill.grandTotal || 0),
+    0
+  );
+
+  // Low stock
+  const lowStock = stock.filter(
+    (item) => Number(item.quantity || 0) <= 5
+  );
+
   return (
-    <>
+    <div>
+      {/* HEADER */}
+
       <div className="page-heading">
         <div>
           <h1>Dashboard</h1>
-          <p>Welcome to Manish Tent House</p>
+          <p>
+            Welcome back to Manish Tent House.
+          </p>
         </div>
-
-        <a href="/new-bill" className="primary-button">
-          <Plus size={18} />
-          Create New Bill
-        </a>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <IndianRupee />
+      {/* STATS */}
+
+      <div className="dashboard-stats">
+
+        <div className="dashboard-stat-card">
+          <div className="stat-icon">
+            <Users size={20} />
+          </div>
+
           <div>
-            <span>Total Sales</span>
-            <h3>₹0</h3>
-            <small>This month</small>
+            <span>Total Customers</span>
+            <h2>{customers.length}</h2>
           </div>
         </div>
 
-        <div className="stat-card">
-          <Receipt />
+        <div className="dashboard-stat-card">
+          <div className="stat-icon">
+            <Package size={20} />
+          </div>
+
+          <div>
+            <span>Total Stock</span>
+            <h2>{totalStock}</h2>
+          </div>
+        </div>
+
+        <div className="dashboard-stat-card">
+          <div className="stat-icon">
+            <Receipt size={20} />
+          </div>
+
           <div>
             <span>Total Bills</span>
-            <h3>0</h3>
-            <small>This month</small>
+            <h2>{bills.length}</h2>
           </div>
         </div>
 
-        <div className="stat-card">
-          <Users />
+        <div className="dashboard-stat-card">
+          <div className="stat-icon">
+            <IndianRupee size={20} />
+          </div>
+
           <div>
-            <span>Customers</span>
-            <h3>0</h3>
-            <small>Total customers</small>
+            <span>Total Sales</span>
+            <h2>{money(totalSales)}</h2>
           </div>
         </div>
 
-        <div className="stat-card">
-          <Package />
-          <div>
-            <span>Available Stock</span>
-            <h3>0</h3>
-            <small>Items available</small>
-          </div>
-        </div>
       </div>
+
+      {/* TODAY */}
 
       <div className="dashboard-grid">
-        <section className="panel">
-          <div className="panel-header">
+
+        <div className="dashboard-panel">
+          <div className="dashboard-panel-header">
             <div>
-              <h2>Recent Bills</h2>
-              <p>Your latest generated bills</p>
+              <h2>Today's Overview</h2>
+              <p>Business summary for today.</p>
             </div>
 
-            <a href="/bills">View All →</a>
+            <TrendingUp size={19} />
           </div>
 
-          <div className="empty-state">
-            <Receipt size={35} />
+          <div className="overview-list">
 
-            <h3>No bills yet</h3>
-
-            <p>
-              Your generated bills will appear here.
-            </p>
-
-            <a href="/new-bill" className="secondary-button">
-              Create First Bill
-            </a>
-          </div>
-        </section>
-
-        <section className="panel">
-          <div className="panel-header">
-            <div>
-              <h2>Stock Overview</h2>
-              <p>Current inventory</p>
+            <div className="overview-row">
+              <span>Today's Bills</span>
+              <strong>{todayBills.length}</strong>
             </div>
 
-            <a href="/stock">Manage →</a>
+            <div className="overview-row">
+              <span>Today's Sales</span>
+              <strong>{money(todaySales)}</strong>
+            </div>
+
+            <div className="overview-row">
+              <span>Pending Amount</span>
+              <strong className="pending-text">
+                {money(totalPending)}
+              </strong>
+            </div>
+
+          </div>
+        </div>
+
+        {/* LOW STOCK */}
+
+        <div className="dashboard-panel">
+          <div className="dashboard-panel-header">
+            <div>
+              <h2>Low Stock</h2>
+              <p>Items that need attention.</p>
+            </div>
+
+            <Package size={19} />
           </div>
 
-          <div className="empty-state">
-            <Package size={35} />
+          {lowStock.length === 0 ? (
+            <div className="dashboard-empty">
+              <Package size={25} />
+              <p>All stock levels are healthy.</p>
+            </div>
+          ) : (
+            <div className="low-stock-list">
+              {lowStock.slice(0, 5).map((item) => (
+                <div
+                  className="low-stock-row"
+                  key={item.id}
+                >
+                  <div>
+                    <strong>{item.name}</strong>
+                    <small>
+                      {item.category || "General"}
+                    </small>
+                  </div>
 
-            <h3>No stock added</h3>
+                  <span>
+                    {item.quantity} left
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-            <p>Add your tent house items.</p>
-
-            <a href="/stock" className="secondary-button">
-              Add Stock
-            </a>
-          </div>
-        </section>
       </div>
-    </>
+
+      {/* RECENT BILLS */}
+
+      <div className="dashboard-panel recent-bills-panel">
+
+        <div className="dashboard-panel-header">
+          <div>
+            <h2>Recent Bills</h2>
+            <p>Latest generated bills.</p>
+          </div>
+
+          <Receipt size={19} />
+        </div>
+
+        {bills.length === 0 ? (
+          <div className="dashboard-empty">
+            <Receipt size={25} />
+            <p>No bills generated yet.</p>
+          </div>
+        ) : (
+          <div className="recent-bills-list">
+
+            {bills.slice(0, 5).map((bill) => (
+              <div
+                className="recent-bill-row"
+                key={bill.id}
+              >
+                <div className="recent-bill-info">
+                  <div className="recent-bill-icon">
+                    <Receipt size={16} />
+                  </div>
+
+                  <div>
+                    <strong>
+                      {bill.billNumber}
+                    </strong>
+
+                    <small>
+                      {bill.customer?.name}
+                    </small>
+                  </div>
+                </div>
+
+                <div className="recent-bill-amount">
+                  <strong>
+                    {money(bill.grandTotal)}
+                  </strong>
+
+                  <small>
+                    {new Date(
+                      bill.date
+                    ).toLocaleDateString("en-IN")}
+                  </small>
+                </div>
+              </div>
+            ))}
+
+          </div>
+        )}
+
+      </div>
+    </div>
   );
 }
 
