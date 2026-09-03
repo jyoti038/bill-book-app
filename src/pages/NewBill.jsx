@@ -27,19 +27,28 @@ function NewBill() {
   const [discount, setDiscount] = useState(0);
   const [received, setReceived] = useState(0);
   const [previousBalance, setPreviousBalance] = useState(0);
+  const [businessName, setBusinessName] = useState("Manish Tent House");
 
   useEffect(() => {
-    const savedCustomers = JSON.parse(
-      localStorage.getItem("mth_customers") || "[]"
-    );
+  const savedCustomers = JSON.parse(
+    localStorage.getItem("mth_customers") || "[]"
+  );
 
-    const savedStock = JSON.parse(
-      localStorage.getItem("mth_stock") || "[]"
-    );
+  const savedStock = JSON.parse(
+    localStorage.getItem("mth_stock") || "[]"
+  );
 
-    setCustomers(savedCustomers);
-    setStock(savedStock);
-  }, []);
+  const savedSettings = JSON.parse(
+    localStorage.getItem("mth_settings") || "{}"
+  );
+
+  setCustomers(savedCustomers);
+  setStock(savedStock);
+
+  setBusinessName(
+    savedSettings.businessName || "Manish Tent House"
+  );
+}, []);
 
  const handleCustomerChange = (id) => {
   setCustomerId(id);
@@ -136,6 +145,7 @@ function NewBill() {
           name: item.name,
           category: item.category,
           rate: item.rate,
+           mrp: item.mrp || item.rate,
           quantity: Number(quantity),
           amount: Number(quantity) * item.rate,
         },
@@ -192,9 +202,18 @@ function NewBill() {
       localStorage.getItem("mth_bills") || "[]"
     );
 
-    const billNumber = `MTH-${String(
-      bills.length + 1
-    ).padStart(4, "0")}`;
+    const savedSettings = JSON.parse(
+  localStorage.getItem("mth_settings") || "{}"
+);
+
+const billPrefix = savedSettings.billPrefix || "MTH";
+const nextBillNumber = Number(
+  savedSettings.nextBillNumber || 1
+);
+
+const billNumber = `${billPrefix}-${String(
+  nextBillNumber
+).padStart(4, "0")}`;
 
     const currentBalance =
   Number(previousBalance || 0) + Number(balance || 0);
@@ -217,6 +236,15 @@ const newBill = {
 localStorage.setItem(
   "mth_bills",
   JSON.stringify([newBill, ...bills])
+);
+const updatedSettings = {
+  ...savedSettings,
+  nextBillNumber: nextBillNumber + 1,
+};
+
+localStorage.setItem(
+  "mth_settings",
+  JSON.stringify(updatedSettings)
 );
 
 // 🔔 Create notification
@@ -296,8 +324,8 @@ setCustomers(updatedCustomers);
         <div>
           <h1>Create New Bill</h1>
           <p>
-            Create a bill for your Manish Tent House customer.
-          </p>
+  Create a bill for your {businessName} customer.
+</p>
         </div>
 
         <div className="bill-number-preview">
@@ -502,6 +530,7 @@ setCustomers(updatedCustomers);
                     <tr>
                       <th>Item</th>
                       <th>Rate</th>
+                      <th>MRP</th>
                       <th>Qty</th>
                       <th>Amount</th>
                       <th></th>
@@ -516,8 +545,13 @@ setCustomers(updatedCustomers);
                         </td>
 
                         <td>
-                          {formatMoney(item.rate)}
+                           {formatMoney(item.rate)}
                         </td>
+
+                        <td>
+                           {formatMoney(item.mrp)}
+                        </td>
+
 
                         <td>{item.quantity}</td>
 

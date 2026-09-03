@@ -36,6 +36,14 @@ function Bills() {
     });
   };
 
+    const savedSettings = JSON.parse(
+    localStorage.getItem("mth_settings") || "{}"
+  );
+
+  const businessName =
+    savedSettings.businessName || "Manish Tent House";
+
+
   const filteredBills = bills.filter((bill) => {
     const text = search.toLowerCase();
 
@@ -88,9 +96,9 @@ const generatePDF = (bill) => {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("MANISH TENT HOUSE", pageWidth / 2, 20, {
-    align: "center",
-  });
+ doc.text(businessName.toUpperCase(), pageWidth / 2, 20, {
+  align: "center",
+});
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
@@ -196,11 +204,7 @@ const generatePDF = (bill) => {
       y + 6
     );
 
-    const stockItem = JSON.parse(
-      localStorage.getItem("mth_stock") || "[]"
-    ).find((stock) => stock.id === item.id);
-
-    const mrp = stockItem?.mrp || item.rate;
+   const mrp = item.mrp || item.rate;
 
     doc.text(
       formatMoney(mrp).replace("Rs. ", ""),
@@ -382,12 +386,12 @@ const generatePDF = (bill) => {
     { align: "center" }
   );
 
-  doc.text(
-    "MANISH TENT HOUSE",
-    157.5,
-    signY + 39,
-    { align: "center" }
-  );
+ doc.text(
+  businessName.toUpperCase(),
+  157.5,
+  signY + 39,
+  { align: "center" }
+);
 
   // =========================
   // SAVE
@@ -400,6 +404,14 @@ return doc;
 
 const sharePDFOnWhatsApp = async (bill) => {
   try {
+
+    const savedSettings = JSON.parse(
+  localStorage.getItem("mth_settings") || "{}"
+);
+
+const businessName =
+  savedSettings.businessName || "Manish Gupta"; 
+
     const doc = generatePDF(bill);
 
     const pdfBlob = doc.output("blob");
@@ -421,8 +433,8 @@ const sharePDFOnWhatsApp = async (bill) => {
       })
     ) {
       await navigator.share({
-        title: `${bill.billNumber} - Manish Tent House`,
-        text: `Bill ${bill.billNumber} - Manish Tent House`,
+        title: `${bill.billNumber} - ${businessName}`,
+text: `Bill ${bill.billNumber} - ${businessName}`,
         files: [pdfFile],
       });
 
@@ -432,7 +444,7 @@ const sharePDFOnWhatsApp = async (bill) => {
     // Fallback for unsupported browsers
     const message = encodeURIComponent(
       `Hello ${bill.customer?.name || ""},\n\n` +
-      `Please find your bill ${bill.billNumber} from Manish Tent House.\n\n` +
+      `Please find your bill ${bill.billNumber} from ${businessName}.\n\n` +
       `Total Amount: ₹${Number(
         bill.grandTotal || 0
       ).toLocaleString("en-IN")}\n` +
@@ -742,7 +754,11 @@ const numberToWords = (num) => {
 
             <div className="bill-preview">
               <div className="preview-business">
-                <h2>MANISH TENT HOUSE</h2>
+                <h2>
+  {JSON.parse(
+    localStorage.getItem("mth_settings") || "{}"
+  ).businessName || "Manish gupta"}
+</h2>
 
                 <p>
                   Tent House & Event Equipment Rental
@@ -785,6 +801,7 @@ const numberToWords = (num) => {
                   <tr>
                     <th>ITEMS</th>
                     <th>QTY.</th>
+                    <th>MRP</th>
                     <th>RATE</th>
                     <th>AMOUNT</th>
                   </tr>
@@ -796,6 +813,10 @@ const numberToWords = (num) => {
                       <td>{item.name}</td>
 
                       <td>{item.quantity}</td>
+
+                      <td>
+                       {formatMoney(item.mrp || item.rate)}
+                      </td>
 
                       <td>
                         {formatMoney(item.rate)}

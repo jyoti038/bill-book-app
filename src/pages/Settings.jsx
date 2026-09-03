@@ -50,17 +50,28 @@ function Settings() {
   };
 
   const handleSave = () => {
-    localStorage.setItem(
-      "mth_settings",
-      JSON.stringify(settings)
-    );
+  localStorage.setItem(
+    "mth_settings",
+    JSON.stringify(settings)
+  );
 
-    setSaved(true);
+  // Business name ko separately bhi save karo
+  localStorage.setItem(
+    "mth_business_name",
+    settings.businessName
+  );
 
-    setTimeout(() => {
-      setSaved(false);
-    }, 2500);
-  };
+  // Website ke dusre components ko update signal
+  window.dispatchEvent(
+    new Event("mth-business-updated")
+  );
+
+  setSaved(true);
+
+  setTimeout(() => {
+    setSaved(false);
+  }, 2500);
+};
 
   const exportBackup = () => {
     const backup = {
@@ -137,7 +148,7 @@ function Settings() {
         >
           <Save size={17} />
 
-          {saved ? "Saved!" : "Save Changes"}
+          {saved ? "Updated!" : "Update Business"}
         </button>
       </div>
 

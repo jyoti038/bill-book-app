@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
   LayoutDashboard,
   Receipt,
@@ -43,6 +45,37 @@ const menuItems = [
 
 function Sidebar({ mobileOpen, setMobileOpen }) {
   const currentPath = window.location.pathname;
+  const [businessName, setBusinessName] = useState(() => {
+  const savedSettings = JSON.parse(
+    localStorage.getItem("mth_settings") || "{}"
+  );
+
+  return savedSettings.businessName || "Manish Tent House";
+});
+
+useEffect(() => {
+  const updateBusinessName = () => {
+    const savedSettings = JSON.parse(
+      localStorage.getItem("mth_settings") || "{}"
+    );
+
+    setBusinessName(
+      savedSettings.businessName || "Manish Tent House"
+    );
+  };
+
+  window.addEventListener(
+    "mth-business-updated",
+    updateBusinessName
+  );
+
+  return () => {
+    window.removeEventListener(
+      "mth-business-updated",
+      updateBusinessName
+    );
+  };
+}, []);
 
   const closeSidebar = () => {
     setMobileOpen(false);
@@ -68,10 +101,8 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
         <div className="sidebar-header">
           <div className="brand-logo">MT</div>
 
-          <div className="brand-name">
-            <h2>Manish Tent</h2>
-            <span>House</span>
-          </div>
+          <h2>{businessName.split(" ").slice(0, 2).join(" ")}</h2>
+<span>{businessName.split(" ").slice(2).join(" ")}</span>
 
           {/* Mobile close button */}
 
@@ -124,9 +155,7 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
             <div className="user-avatar">M</div>
 
             <div>
-              <strong>
-                Manish Tent House
-              </strong>
+             <strong>{businessName}</strong>
 
               <small>
                 Administrator
@@ -138,5 +167,7 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
     </>
   );
 }
+
+
 
 export default Sidebar;
